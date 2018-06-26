@@ -2074,3 +2074,119 @@ function fruitful_frontend_scripts_include_lightbox() {
         }
     }
 }
+
+/*
+Trung custom start
+add Ajax search bang bao gia
+*/
+// add the ajax fetch js
+add_action( 'wp_footer', 'ajax_fetch' );
+function ajax_fetch() {
+?>
+<script type="text/javascript">
+function fetch(){
+	jQuery('#defaultdatabangbaogia').hide();
+
+    jQuery.ajax({
+        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+        type: 'post',
+        data: { action: 'data_fetch',
+				keyword: jQuery('#keywordbangbaogia').val(),
+				danhmuc: jQuery('#danhmucbangbaogia').val() 
+				},
+        success: function(data) {
+            jQuery('#datafetch').html( data );
+        }
+    });
+
+}
+</script>
+
+<?php
+}
+
+// the ajax function
+add_action('wp_ajax_data_fetch' , 'data_fetch');
+add_action('wp_ajax_nopriv_data_fetch','data_fetch');
+function data_fetch(){
+	if(!isset($_POST['keyword']) || trim($_POST['keyword']) ==='' ) {
+		if(strcmp($_POST['danhmuc'], 'Alls') == 0) {
+			$args = array('post_type'   => 'product',
+			'post_status' => 'publish',
+			'posts_per_page' => -1);
+		} else {
+			$args = array('post_type'   => 'product',
+			'post_status' => 'publish',
+			'posts_per_page' => -1,
+			'tax_query'   => array(
+				'relation' => 'AND',
+				array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'slug',
+					'terms'    => $_POST['danhmuc'],
+				)
+			),);
+		}
+		$wc_query = new WP_Query($args);
+	} 
+
+	// Da nhap san pham
+	else {
+		$args = array(
+			'posts_per_page' => -1, 
+			's' => esc_attr( $_POST['keyword'] ), 
+			'post_type' => 'product'
+		);
+		if (strcmp($_POST['danhmuc'], 'Alls') != 0) {
+			$args = array( 
+				'posts_per_page' => -1, 
+				's' => esc_attr( $_POST['keyword'] ), 
+				'post_type' => 'product',
+				'tax_query'   => array(
+					'relation' => 'AND',
+					array(
+						'taxonomy' => 'product_cat',
+						'field'    => 'slug',
+						'terms'    => $_POST['danhmuc'],
+					)
+				),
+				 ) ;
+		}
+		$wc_query = new WP_Query($args);
+	}
+         echo '<table id="bangbaogiaid">';
+        
+        echo '
+        <tr> 
+		<th>Sản Phẩm</th>
+		<th>Danh Mục</th>
+        <th>Giá</th>
+        </tr>
+		';
+
+        while ($wc_query->have_posts()) : // (4)
+                        $wc_query->the_post(); // (4.1)
+			echo '
+			<tr>
+				<td><a href="';  the_permalink(); echo '">'; the_title();  echo'</a></td>';
+				echo '<td>';
+				global $post, $product; $cat_count = sizeof( get_the_terms( $post->ID, 'product_cat' ) ); echo $product->get_categories( ', ', '<span class="posted_in">' . _n( 'Category:', 'Categories:', $cat_count, 'woocommerce' ) . ' ', '</span>' )
+				.'</td>';
+
+				 echo '</td>
+				<td>'; 
+					echo get_post_meta( get_the_ID(), '_regular_price', true );
+				echo '</td>
+			</tr>
+			';
+            
+        endwhile;
+		echo '</table>';
+		wp_reset_postdata();
+
+    die();
+}
+
+/*
+Trung custom end
+*/

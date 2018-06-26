@@ -9,6 +9,13 @@
 
 get_header(); ?>
 
-	<?php fruitful_get_content_with_custom_sidebar('homepage'); ?>
+<?php 
+	if ( 'posts' == get_option( 'show_on_front' ) ) {
+		include( get_home_template() );
+	} else {
+		include( get_page_template() );
+	}
+	/*fruitful_get_content_with_custom_sidebar('homepage'); */
+?>
 		
 <?php get_footer(); ?>
