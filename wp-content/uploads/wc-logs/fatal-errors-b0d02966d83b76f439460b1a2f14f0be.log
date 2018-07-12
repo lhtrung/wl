@@ -1,2 +1,6 @@
 2018-05-27T20:28:30+00:00 CRITICAL Call to a member function get_categories() on null
 
+2018-06-21T15:33:12+00:00 CRITICAL Maximum execution time of 30 seconds exceeded
+
+2018-07-07T11:53:40+00:00 CRITICAL Maximum execution time of 30 seconds exceeded
+

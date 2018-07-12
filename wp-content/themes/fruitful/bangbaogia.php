@@ -36,11 +36,6 @@ if( !empty($product_categories) ){
     static $i = 1;
     if ($i == 1) {
         $i++;
-        $args = array('post_type'   => 'product',
-        'post_status' => 'publish',
-        'posts_per_page' => -1);
-        $wc_query = new WP_Query($args);
-    
         echo '<div id ="defaultdatabangbaogia">';
         echo '<table id="bangbaogiaid">';
             
@@ -51,27 +46,48 @@ if( !empty($product_categories) ){
             <th>Giá</th>
             </tr>
             ';
-    
-            while ($wc_query->have_posts()) : // (4)
-                            $wc_query->the_post(); // (4.1)
-                echo '
-                <tr>
-                    <td><a href="';  the_permalink(); echo '">'; the_title();  echo'</a></td>';
-                    echo '<td>';
-                    global $post, $product; $cat_count = sizeof( get_the_terms( $post->ID, 'product_cat' ) ); echo $product->get_categories( ', ', '<span class="posted_in">' . _n( 'Category:', 'Categories:', $cat_count, 'woocommerce' ) . ' ', '</span>' )
-                    .'</td>';
-    
-                     echo '</td>
-                    <td>'; 
-                        echo get_post_meta( get_the_ID(), '_regular_price', true );
-                    echo '</td>
-                </tr>
-                ';
-                
-            endwhile;
-            echo '</table>'
+        if( !empty($product_categories) ) {
+            foreach($product_categories as $key => $category) {
+
+                $args = array('post_type'   => 'product',
+                'post_status' => 'publish',
+                'orderby'   => 'title',
+                'order' => ASC,
+                'tax_query'   => array(
+                    'relation' => 'AND',
+                    array(
+                        'taxonomy' => 'product_cat',
+                        'field'    => 'slug',
+                        'terms'    => $category->name,
+                    )
+                ),
+                'posts_per_page' => -1);
+                $wc_query = new WP_Query($args);
+            
+            
+                    while ($wc_query->have_posts()) : // (4)
+                                    $wc_query->the_post(); // (4.1)
+                        echo '
+                        <tr>
+                            <td><a href="';  the_permalink(); echo '">'; the_title();  echo'</a></td>';
+                            echo '<td>';
+                            global $post, $product; $cat_count = sizeof( get_the_terms( $post->ID, 'product_cat' ) ); 
+                            echo str_replace("Danh mục:", "", $product->get_categories( ', ', '<span class="posted_in">' . _n( 'Category:', 'Categories:', $cat_count, 'woocommerce' ) . ' ', '</span>' ))
+                            .'</td>';
+            
+                            echo '</td>
+                            <td>'; 
+                                echo number_format((double)get_post_meta(get_the_ID(), '_regular_price', true ));
+                            echo '</td>
+                        </tr>
+                        ';
+                        
+                    endwhile;
+            }
+        }
+        echo '</table>'
             . '</div>';
-            wp_reset_postdata();
+        wp_reset_postdata();
     }
 ?>
 

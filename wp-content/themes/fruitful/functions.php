@@ -264,7 +264,38 @@ function fruitful_widgets_init() {
 			'before_title' => '<h3 class="widget-title">',
 			'after_title' => '</h3>',
 		) );
+
 	}
+	/*Custom Footer sidebar-starts*/
+	register_sidebar( array(
+		'name' => 'Footer Sidebar 1',
+		'id' => 'footer-sidebar-1',
+		'description' => 'Appears in the footer area',
+		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
+		'after_widget' => '</aside>',
+		'before_title' => '<h3 class="widget-title">',
+		'after_title' => '</h3>',
+	) );
+
+	register_sidebar( array(
+		'name' => 'Footer Sidebar 2',
+		'id' => 'footer-sidebar-2',
+		'description' => 'Appears in the footer area',
+		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
+		'after_widget' => '</aside>',
+		'before_title' => '<h3 class="widget-title">',
+		'after_title' => '</h3>',
+	) );
+	register_sidebar( array(
+		'name' => 'Footer Sidebar 3',
+		'id' => 'footer-sidebar-3',
+		'description' => 'Appears in the footer area',
+		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
+		'after_widget' => '</aside>',
+		'before_title' => '<h3 class="widget-title">',
+		'after_title' => '</h3>',
+	) );
+	/*Custom Footer sidebar-ends*/
 }
 
 add_action( 'widgets_init', 'fruitful_widgets_init' );
@@ -2109,6 +2140,10 @@ function fetch(){
 add_action('wp_ajax_data_fetch' , 'data_fetch');
 add_action('wp_ajax_nopriv_data_fetch','data_fetch');
 function data_fetch(){
+	$isDanhMucTatCa = false;
+	if (strcmp($_POST['danhmuc'], 'Alls') == 0) {
+		$isDanhMucTatCa = true;
+	}
 	if(!isset($_POST['keyword']) || trim($_POST['keyword']) ==='' ) {
 		if(strcmp($_POST['danhmuc'], 'Alls') == 0) {
 			$args = array('post_type'   => 'product',
@@ -2130,7 +2165,7 @@ function data_fetch(){
 		$wc_query = new WP_Query($args);
 	} 
 
-	// Da nhap san pham
+	// Da nhap tu khoa
 	else {
 		$args = array(
 			'posts_per_page' => -1, 
@@ -2154,7 +2189,7 @@ function data_fetch(){
 		}
 		$wc_query = new WP_Query($args);
 	}
-         echo '<table id="bangbaogiaid">';
+        echo '<table id="bangbaogiaid">';
         
         echo '
         <tr> 
@@ -2164,23 +2199,81 @@ function data_fetch(){
         </tr>
 		';
 
-        while ($wc_query->have_posts()) : // (4)
-                        $wc_query->the_post(); // (4.1)
-			echo '
-			<tr>
-				<td><a href="';  the_permalink(); echo '">'; the_title();  echo'</a></td>';
-				echo '<td>';
-				global $post, $product; $cat_count = sizeof( get_the_terms( $post->ID, 'product_cat' ) ); echo $product->get_categories( ', ', '<span class="posted_in">' . _n( 'Category:', 'Categories:', $cat_count, 'woocommerce' ) . ' ', '</span>' )
-				.'</td>';
-
-				 echo '</td>
-				<td>'; 
-					echo get_post_meta( get_the_ID(), '_regular_price', true );
-				echo '</td>
-			</tr>
-			';
-            
-        endwhile;
+		// Avoid un-ordered for danh muc and product when adding product from different time
+		// loops and display product by catetgory sequentially
+		if ($isDanhMucTatCa) {
+			$orderby = 'name';
+			$order = 'asc';
+			$hide_empty = true ;
+			$cat_args = array(
+				'orderby'    => $orderby,
+				'order'      => $order,
+				'hide_empty' => $hide_empty,
+			);
+			 
+			$product_categories = get_terms( 'product_cat', $cat_args );
+			if( !empty($product_categories) ) {
+				foreach($product_categories as $key => $category) {
+					$args = array('post_type'   => 'product',
+					'post_status' => 'publish',
+					'orderby'   => 'title',
+					'order' => ASC,
+					's' => esc_attr( $_POST['keyword'] ), 
+					'tax_query'   => array(
+						'relation' => 'AND',
+						array(
+							'taxonomy' => 'product_cat',
+							'field'    => 'slug',
+							'terms'    => $category->name,
+						)
+					),
+					'posts_per_page' => -1);
+					$wc_query = new WP_Query($args);
+				
+				
+						while ($wc_query->have_posts()) : // (4)
+										$wc_query->the_post(); // (4.1)
+							echo '
+							<tr>
+								<td><a href="';  the_permalink(); echo '">'; the_title();  echo'</a></td>';
+								echo '<td>';
+								global $post, $product; $cat_count = sizeof( get_the_terms( $post->ID, 'product_cat' ) ); 
+								echo str_replace("Danh mục:", "", $product->get_categories( ', ', '<span class="posted_in">' . _n( 'Category:', 'Categories:', $cat_count, 'woocommerce' ) . ' ', '</span>' ))
+								.'</td>';
+				
+								echo '</td>
+								<td>'; 
+									echo number_format((double)get_post_meta(get_the_ID(), '_regular_price', true ));
+								echo '</td>
+							</tr>
+							';
+							
+						endwhile;
+				}
+			}	
+		}
+		
+		// loop only since we just have one category now
+		else {
+			while ($wc_query->have_posts()) : // (4)
+							$wc_query->the_post(); // (4.1)
+				echo '
+				<tr>
+					<td><a href="';  the_permalink(); echo '">'; the_title();  echo'</a></td>';
+					echo '<td>';
+					global $post, $product; $cat_count = sizeof( get_the_terms( $post->ID, 'product_cat' ) ); 
+					echo str_replace("Danh mục:", "", $product->get_categories( ', ', '<span class="posted_in">' . _n( 'Category:', 'Categories:', $cat_count, 'woocommerce' ) . ' ', '</span>' ))
+					.'</td>';
+	
+					 echo '</td>
+					<td>'; 
+						echo number_format((double)get_post_meta( get_the_ID(), '_regular_price', true ));
+					echo '</td>
+				</tr>
+				';
+				
+			endwhile;
+		}
 		echo '</table>';
 		wp_reset_postdata();
 
