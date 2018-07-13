@@ -28,7 +28,7 @@ if( !empty($product_categories) ){
     }
 }
 ?>
-</select> 
+</select>
 </div>
 
 <!--default data load-->

@@ -2665,3 +2665,7 @@ div#fbSEOComments{
 	/*color: #7D7D7D; */
 	font-size: 13px;
 }
+
+.page-title {
+	display: none
+}
