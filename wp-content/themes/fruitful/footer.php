@@ -13,6 +13,8 @@
 			</div>
 		</div><!-- .page-container-->
 
+
+
 		<!--Add Custom Widget to Footer starts-->
 		<div id="footer-sidebar">
 			<div class="container secondary">
@@ -65,5 +67,29 @@
 		</footer><!-- #colophon .site-footer -->
 	<!--WordPress Development by Fruitful Code-->
 <?php wp_footer(); ?>
+<!--
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '260255341234309',
+      xfbml      : true,
+      version    : 'v3.0'
+    });
+    FB.AppEvents.logPageView();
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "https://connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="fb-customerchat"
+ page_id="193308457480767">
+</div>
+-->
 </body>
 </html>
